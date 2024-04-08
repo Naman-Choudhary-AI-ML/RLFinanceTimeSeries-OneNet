@@ -1,0 +1,16 @@
+.DS_Store
+.DS_Store?
+.idea
+*.pyc
+**/__pycache__/
+checkpoints/
+results/
+results1/
+imgs/*
+*.pdf
+*.out
+*.csv
+get-pip.py
+install_gpu_driver.py
+Miniconda3-latest-Linux-x86_64.sh
+NVIDIA-Linux-x86_64-525.125.06.run
