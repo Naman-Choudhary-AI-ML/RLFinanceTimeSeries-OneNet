@@ -9,7 +9,7 @@ results1/
 imgs/*
 *.pdf
 *.out
-*.csv
+# *.csv
 get-pip.py
 install_gpu_driver.py
 Miniconda3-latest-Linux-x86_64.sh
