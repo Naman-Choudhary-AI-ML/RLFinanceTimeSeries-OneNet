@@ -1,4 +1,4 @@
-from data.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred
+from data.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred, FinancialDataset
 from exp.exp_basic import Exp_Basic
 from models.ts2vec.encoder import TSEncoder
 from models.ts2vec.losses import hierarchical_contrastive_loss
@@ -78,9 +78,10 @@ class Exp_TS2Vec(Exp_Basic):
             'ECL': Dataset_Custom,
             'Solar': Dataset_Custom,
             'custom': Dataset_Custom,
+            'finance': FinancialDataset,
         }
         Data = data_dict[self.args.data]
-        timeenc = 2
+        timeenc = 2 if args.timeenc else 0
 
         if flag in ('test', 'val') or downstream:
             shuffle_flag = False;

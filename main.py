@@ -64,12 +64,12 @@ def init_dl_program(
 
 parser = argparse.ArgumentParser(description='[Informer] Long Sequences Forecasting')
 
-parser.add_argument('--data', type=str, default='ETTh2', help='data')
+parser.add_argument('--data', type=str, default='finance', help='data')
 parser.add_argument('--root_path', type=str, default='./data/', help='root path of the data file')
-parser.add_argument('--data_path', type=str, default='ETTh2.csv', help='data file')    
-parser.add_argument('--features', type=str, default='M', help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
-parser.add_argument('--target', type=str, default='OT', help='target feature in S or MS task')
-parser.add_argument('--freq', type=str, default='h', help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
+parser.add_argument('--data_path', type=str, default='finance.csv', help='data file')    
+parser.add_argument('--features', type=str, default='MS', help='forecasting task, options:[M, S, MS]; M:multivariate predict multivariate, S:univariate predict univariate, MS:multivariate predict univariate')
+parser.add_argument('--target', type=str, default='Close', help='target feature in S or MS task')
+parser.add_argument('--freq', type=str, default='b', help='freq for time features encoding, options:[s:secondly, t:minutely, h:hourly, d:daily, b:business days, w:weekly, m:monthly], you can also use more detailed freq like 15min or 3h')
 parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
 
 parser.add_argument('--seq_len', type=int, default=96, help='input sequence length of Informer encoder')
@@ -207,6 +207,7 @@ data_parser = {
     'Exchange': {'data': 'exchange_rate.csv', 'T':'OT', 'M':[8,8,8]},
     'Illness': {'data': 'national_illness.csv', 'T':'OT', 'M':[7,7,7]},
     'Traffic': {'data': 'traffic.csv', 'T':'OT', 'M':[862,862,862]},
+    'finance': {'data': 'finance.csv', 'T': 'Close', 'M': [6, 6, 6], 'S': [1, 1, 1], 'MS': [6, 6, 1]},
 }
 if args.data in data_parser.keys():
     data_info = data_parser[args.data]

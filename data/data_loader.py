@@ -443,3 +443,75 @@ class Dataset_Pred(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
+
+class FinancialDataset(Dataset):
+    def __init__(self, root_path, flag='train', size=None, 
+                 features='MS', data_path='finance.csv', 
+                 target='Close', scale=True, inverse=False, timeenc=0, freq='b'):
+        # size [seq_len, label_len, pred_len]
+        if size is None:
+            self.seq_len = 24  # customize based on your needs
+            self.label_len = 1
+            self.pred_len = 1
+        else:
+            self.seq_len = size[0]
+            self.label_len = size[1]
+            self.pred_len = size[2]
+
+        assert flag in ['train', 'test', 'val']
+        type_map = {'train': 0, 'val': 1, 'test': 2}
+        self.set_type = type_map[flag]
+        
+        self.features = features
+        self.target = target
+        self.scale = scale
+        self.inverse = inverse
+        self.timeenc = timeenc
+        self.freq = freq
+        
+        self.root_path = root_path
+        self.data_path = data_path
+        self.__read_data__()
+
+    def __read_data__(self):
+        self.scaler = StandardScaler()
+        df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
+        df_raw['Date'] = pd.to_datetime(df_raw['Date'])
+        
+        border1s = [0, int(len(df_raw)*0.7) - self.seq_len, int(len(df_raw)*0.9) - self.seq_len]
+        border2s = [int(len(df_raw)*0.7), int(len(df_raw)*0.9), len(df_raw)]
+        
+        border1 = border1s[self.set_type]
+        border2 = border2s[self.set_type]
+
+        df_data = df_raw if self.features == 'MS' else df_raw[[self.target] + ['Date']]
+
+        if self.scale:
+            train_data = df_data.iloc[border1s[0]:border2s[0], :-1]
+            self.scaler.fit(train_data)
+            data = self.scaler.transform(df_data.iloc[:, :-1])
+        else:
+            data = df_data.iloc[:, :-1].values
+
+        self.data_x = data[border1:border2]
+        self.data_y = df_data[self.target].values[border1:border2]
+        self.data_stamp = df_data['Date'].values[border1:border2]
+
+    def __getitem__(self, index):
+        s_begin = index
+        s_end = s_begin + self.seq_len
+        r_begin = s_end - self.label_len
+        r_end = r_begin + self.label_len + self.pred_len
+
+        seq_x = self.data_x[s_begin:s_end]
+        seq_y = self.data_y[r_begin:r_end]
+        seq_x_mark = self.data_stamp[s_begin:s_end]
+        seq_y_mark = self.data_stamp[r_begin:r_end]
+
+        return seq_x, seq_y, seq_x_mark, seq_y_mark
+
+    def __len__(self):
+        return len(self.data_x) - self.seq_len - self.pred_len + 1
+
+    def inverse_transform(self, data):
+        return self.scaler.inverse_transform(data)
