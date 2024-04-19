@@ -380,6 +380,7 @@ class Exp_TS2VecSupervised(Exp_Basic):
 
         x = batch_x.float().to(self.device) #torch.cat([batch_x.float(), batch_x_mark.float()], dim=-1).to(self.device)
         batch_x_mark = batch_x_mark.float().to(self.device)
+        print('x_shape', batch_x_mark.shape)
         batch_y = batch_y.float()
         
         b, t, d = batch_y.shape
