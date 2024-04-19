@@ -536,17 +536,28 @@ class FinancialDataset(Dataset):
         # self.data_y = df_data.loc[border1:border2, self.target].values
         # self.data_stamp = df_data.loc[border1:border2, 'Date'].values
 
-        cols = [col for col in df_raw.columns if col not in ['Date', self.target]]
+        cols = [col for col in df_raw.columns if col not in ['Date', self.target, 'day_of_week', 'day_of_month', 'month_of_year']]
         print(cols)
 
+        # if self.scale:
+        #     train_data = df_raw.loc[border1s[0]:border2s[0], cols]
+        #     self.scaler.fit(train_data)
+        #     scaled_data = self.scaler.transform(df_raw.loc[:, cols])
+        #     df_raw.loc[:, cols] = scaled_data
+
+        # self.data_x = df_raw.loc[border1:border2, cols].values
+        # self.data_y = df_raw.loc[border1:border2, self.target].values
+        # self.data_stamp = df_raw.loc[border1:border2, ['day_of_week', 'day_of_month', 'month_of_year']].values
+        
         if self.scale:
             train_data = df_raw.loc[border1s[0]:border2s[0], cols]
             self.scaler.fit(train_data)
             scaled_data = self.scaler.transform(df_raw.loc[:, cols])
             df_raw.loc[:, cols] = scaled_data
 
+        # Storing data, target, and date-based features
         self.data_x = df_raw.loc[border1:border2, cols].values
-        self.data_y = df_raw.loc[border1:border2, self.target].values
+        self.data_y = df_raw.loc[border1:border2, self.target].values.reshape(-1, 1)  # Ensuring y is always 2D
         self.data_stamp = df_raw.loc[border1:border2, ['day_of_week', 'day_of_month', 'month_of_year']].values
 
     def __getitem__(self, index):
@@ -568,12 +579,24 @@ class FinancialDataset(Dataset):
 
         seq_x = self.data_x[s_begin:s_end]
         seq_y = self.data_y[r_begin:r_end]
-        seq_x_mark = self.data_stamp[s_begin:s_end]  # Encoded date information
-        seq_y_mark = self.data_stamp[r_begin:r_end]  # Encoded date information
-        seq_y_shape = seq_y.shape[0]
-        seq_y = seq_y.reshape(seq_y_shape,1)
+        seq_x_mark = self.data_stamp[s_begin:s_end]
+        seq_y_mark = self.data_stamp[r_begin:r_end]
 
         return seq_x, seq_y, seq_x_mark, seq_y_mark
+
+        # s_begin = index
+        # s_end = s_begin + self.seq_len
+        # r_begin = s_end - self.label_len
+        # r_end = r_begin + self.label_len + self.pred_len
+
+        # seq_x = self.data_x[s_begin:s_end]
+        # seq_y = self.data_y[r_begin:r_end]
+        # seq_x_mark = self.data_stamp[s_begin:s_end]  # Encoded date information
+        # seq_y_mark = self.data_stamp[r_begin:r_end]  # Encoded date information
+        # seq_y_shape = seq_y.shape[0]
+        # seq_y = seq_y.reshape(seq_y_shape,1)
+
+        # return seq_x, seq_y, seq_x_mark, seq_y_mark
 
     def __len__(self):
         return len(self.data_x) - self.seq_len - self.pred_len + 1
