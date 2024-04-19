@@ -4,3 +4,7 @@ pandas==0.25.1
 scikit_learn==0.21.3
 tqdm==4.62.3
 einops==0.4.0
+torch==1.13.1
+wandb==0.16.6
+numexpr==2.8.6
+torchvision==0.14.1

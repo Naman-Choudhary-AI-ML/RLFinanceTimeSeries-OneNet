@@ -1,4 +1,4 @@
-from data.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred
+from data.data_loader import Dataset_ETT_hour, Dataset_ETT_minute, Dataset_Custom, Dataset_Pred, FinancialDataset
 from exp.exp_basic import Exp_Basic
 from models.ts2vec.fsnet import TSEncoder, GlobalLocalMultiscaleTSEncoder
 from models.ts2vec.losses import hierarchical_contrastive_loss
@@ -161,6 +161,7 @@ class Exp_TS2VecSupervised(Exp_Basic):
             'ECL': Dataset_Custom,
             'Solar': Dataset_Custom,
             'custom': Dataset_Custom,
+            'finance': FinancialDataset,
         }
         data_dict = defaultdict(lambda: Dataset_Custom, data_dict_)
         Data = data_dict[self.args.data]

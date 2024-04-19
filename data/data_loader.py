@@ -447,7 +447,7 @@ class Dataset_Pred(Dataset):
 class FinancialDataset(Dataset):
     def __init__(self, root_path, flag='train', size=None, 
                  features='MS', data_path='finance.csv', 
-                 target='Close', scale=True, inverse=False, timeenc=0, freq='b'):
+                 target='Close', scale=True, inverse=False, timeenc=0, freq='b', cols = None):
         # size [seq_len, label_len, pred_len]
         if size is None:
             self.seq_len = 24  # customize based on your needs
@@ -468,6 +468,7 @@ class FinancialDataset(Dataset):
         self.inverse = inverse
         self.timeenc = timeenc
         self.freq = freq
+        self.cols = cols
         
         self.root_path = root_path
         self.data_path = data_path
@@ -484,16 +485,43 @@ class FinancialDataset(Dataset):
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
 
-        df_data = df_raw if self.features == 'MS' else df_raw[[self.target] + ['Date']]
+        # Apply column selection based on 'cols' parameter
+        if self.cols:
+            cols = self.cols.copy()
+            if self.target in cols:
+                cols.remove(self.target)
+            if 'Date' in cols:
+                cols.remove('Date')
+        else:
+            # Default columns to include if 'cols' is not specified
+            # cols = list(df_raw.columns)
+            # cols.remove(self.target)
+            # cols.remove('Date')
+            cols = list(df_raw.select_dtypes(include=[np.number]).columns)
+
+        df_data = df_raw[['Date'] + cols + [self.target]]
+
+
+        # df_data = df_raw if self.features == 'MS' else df_raw[[self.target] + ['Date']]
+
+        # if self.scale:
+        #     train_data = df_data.iloc[border1s[0]:border2s[0], :-1]
+        #     self.scaler.fit(train_data)
+        #     data = self.scaler.transform(df_data.iloc[:, :-1])
+        # else:
+        #     data = df_data.iloc[:, :-1].values
+
+        # self.data_x = data[border1:border2]
+        # self.data_y = df_data[self.target].values[border1:border2]
+        # self.data_stamp = df_data['Date'].values[border1:border2]
 
         if self.scale:
-            train_data = df_data.iloc[border1s[0]:border2s[0], :-1]
+            train_data = df_data.iloc[border1s[0]:border2s[0]][cols]
             self.scaler.fit(train_data)
-            data = self.scaler.transform(df_data.iloc[:, :-1])
-        else:
-            data = df_data.iloc[:, :-1].values
+            scaled_data = self.scaler.transform(df_data[cols])
+            df_data[cols] = scaled_data
 
-        self.data_x = data[border1:border2]
+        self.data_x = df_data.iloc[border1:border2][cols].values
         self.data_y = df_data[self.target].values[border1:border2]
         self.data_stamp = df_data['Date'].values[border1:border2]
 
